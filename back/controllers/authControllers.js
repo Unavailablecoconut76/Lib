@@ -83,11 +83,11 @@ export const login=catchAsyncErrors(async(req,res,next)=>{
     const user =await User.findOne({email,accountVerified:true}).select("+password");//explicitly tells Mongoose to include the password field in this specific query
     //The + prefix overrides the select: false setting just for this query
     if(!user){
-        return next(new ErrorHandler("no such user.Invalid email or password"))
+        return next(new ErrorHandler("no such user.Invalid email or password",401))
     }
     const isPasswordMatched=await bcrypt.compare(password,user.password);
     if(!isPasswordMatched){
-        return next(new ErrorHandler("Wrong details",400));
+        return next(new ErrorHandler("Wrong details",401));
     }
     sendToken(user,200,"user login Complete!",res);
 });
@@ -123,7 +123,7 @@ export const forgotPassword =catchAsyncErrors(async(req,res,next)=>{
 
     await user.save({validateBeforeSave:false});
 
-    const resetPasswordUrl =`${process.env.FRONTEND_URL}/password/reset${resetToken}`;
+    const resetPasswordUrl =`${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
     const message = generateForgotPasswordEmailtemplate(resetPasswordUrl);
 
     try{
@@ -171,15 +171,15 @@ export const resetpassword=catchAsyncErrors(async(req,res,next)=>{
 
 export const updatePassword=catchAsyncErrors(async(req,res,next)=>{
     const user = await User.findById(req.user._id).select("+password");
-    const {currentPassword,newPassword,confirmnewPassword}=req.body;
-    if(!currentPassword||!newPassword||!confirmnewPassword){
+    const {currentPassword,newPassword,confirmNewPassword}=req.body;
+    if(!currentPassword||!newPassword||!confirmNewPassword){
         return next (new ErrorHandler("Please fill all fields",400));
     }
     const isPasswordMatched=await bcrypt.compare(currentPassword,user.password);
     if(!isPasswordMatched)  
         return next(new ErrorHandler("current password is incorrect",400));
 
-    if(newPassword!==confirmnewPassword){
+    if(newPassword!==confirmNewPassword){
         return next(new ErrorHandler("passwords do not match",400));
     }
 

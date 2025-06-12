@@ -32,9 +32,16 @@ export const getAllBooks =catchAsyncErrors(async(req,res,next)=>{
 export const deleteBook = catchAsyncErrors(async(req,res,next)=>{
     const {id}=req.params;
     const book = await Book.findById(id);
+    
     if(!book){
         return next(new ErrorHandler("book not found",404));
     }
+
+    // Check if book is currently borrowed
+    if(book.quantity < book.totalQuantity) {
+        return next(new ErrorHandler("Cannot delete book - some copies are currently borrowed", 400));
+    }
+
     await book.deleteOne();
     res.status(200).json({
         success:true,

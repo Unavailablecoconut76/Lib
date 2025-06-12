@@ -102,7 +102,7 @@ const authSlice= createSlice({
             state.loading=false;
             state.message=action.payload.message;
         },
-        forgotPasswordFailed(state){
+        forgotPasswordFailed(state,action){
             state.loading=false;
             state.error=action.payload;
         },
@@ -118,7 +118,7 @@ const authSlice= createSlice({
             state.user=action.payload.user;
             state.isAuthenticated=true;
         },
-        resetPasswordFailed(state){
+        resetPasswordFailed(state,action){
             state.loading=false;
             state.error=action.payload;
         },
@@ -133,7 +133,7 @@ const authSlice= createSlice({
             state.message=action.payload.message;
             
         },
-        updatePasswordFailed(state){
+        updatePasswordFailed(state,action){
             state.loading=false;
             state.error=action.payload;
         },
@@ -192,7 +192,7 @@ export const login = (data) => async(dispatch) => {
             }
         }
     ).then(res => {
-        dispatch(authSlice.actions.LoginSuccess(res.data));
+        dispatch(authSlice.actions.LoginSuccess({message:res.data}));
     }).catch(error => {
         const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
         dispatch(authSlice.actions.LoginFailed(errorMessage));
@@ -230,7 +230,8 @@ export const forgotPassword =(email)=>async(dispatch)=>{
             "Content-Type":"application/json",
         },
     }).then(res=>{
-        dispatch(authSlice.actions.forgotPasswordSuccess(res.data.message));
+        dispatch(authSlice.actions.forgotPasswordSuccess({
+            message:res.data.message}));
     }).catch(error=>{
         dispatch(authSlice.actions.forgotPasswordFailed(error.response.data.message));
     });
@@ -244,7 +245,7 @@ export const resetPassword =(data,token)=>async(dispatch)=>{
             "Content-Type":"application/json",
         },
     }).then(res=>{
-        dispatch(authSlice.actions.resetPasswordSuccess(res.data));
+        dispatch(authSlice.actions.resetPasswordSuccess({message:res.data,user:res.data.user}));
     }).catch(error=>{
         dispatch(authSlice.actions.resetPasswordFailed(error.response.data.message));
     });
@@ -258,7 +259,7 @@ export const updatePassword =(data)=>async(dispatch)=>{
             "Content-Type":"application/json",
         },
     }).then(res=>{
-        dispatch(authSlice.actions.updatePasswordSuccess(res.data.message));
+        dispatch(authSlice.actions.updatePasswordSuccess({message:res.data.message}));
     }).catch(error=>{
         dispatch(authSlice.actions.updatePasswordFailed(error.response.data.message));
     });

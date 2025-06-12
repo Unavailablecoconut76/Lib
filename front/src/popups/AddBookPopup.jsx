@@ -29,29 +29,29 @@ const AddBookPopup = () => {
             <h3 className='text-xl font-bold mb-4'>Add book</h3>
             <form onSubmit={handleAddBook} >
               <div className='mb-4'>
-                <label className="block text-gray-900 font-medium"htmlFor="">book title</label>
+                <label className="block text-gray-900 font-medium"htmlFor="">Book title</label>
                 <input type="text" name={title} onChange={(e)=>setTitle(e.target.value)} placeholder="books title" className='w-full px-4 py-2 border border-black rounded-md' required/>
               </div>
 
               <div className='mb-4'>
-                <label className="block text-gray-900 font-medium"htmlFor="">book author</label>
+                <label className="block text-gray-900 font-medium"htmlFor="">Book author</label>
                 <input type="text" name={author} onChange={(e)=>setAuthor(e.target.value)} placeholder="books title" className='w-full px-4 py-2 border border-black rounded-md' required/>
               </div>
 
               <div className='mb-4'>
-                <label className="block text-gray-900 font-medium"htmlFor="">book quantity</label>
+                <label className="block text-gray-900 font-medium"htmlFor="">Book quantity</label>
                 <input type="number" name={quantity} onChange={(e)=>setQuantity(e.target.value)} placeholder="books title" className='w-full px-4 py-2 border border-black rounded-md' required/>
               </div>
 
               <div className='mb-4'>
-                <label className="block text-gray-900 font-medium"htmlFor="">book Description</label>
-                <textarea value={description}onChange={(e)=>setDescription(e.target.value)} placeholder="enter description" rows={4} className="w-full px-4 py-2 border border-black rounded-md"/>
+                <label className="block text-gray-900 font-medium"htmlFor="">Book Description</label>
+                <textarea value={description}onChange={(e)=>setDescription(e.target.value)} placeholder="Enter Publication , Book Edition" rows={4} className="w-full px-4 py-2 border border-black rounded-md"/>
               </div>
 
               <div className='flex justify-end epace-x-4'>
                 <button className='px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300' type='button'
-                onClick={()=>dispatch(toggleAddBookPopup())}>close</button>
-                <button type="submit" className='px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 '>ADD</button>
+                onClick={()=>dispatch(toggleAddBookPopup())}>Close</button>
+                <button type="submit" className='px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 '>Add</button>
               </div>
             </form>
           </div>

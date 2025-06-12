@@ -1,4 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAction } from "@reduxjs/toolkit";
+
+
 
 const popupSlice =createSlice({
     name:"popup",
@@ -9,6 +11,8 @@ const popupSlice =createSlice({
         recordBookPopup:false,
         returnBookPopup:false,
         addNewAdminPopup:false,
+        bookManagementOpen: false,
+        usersComponentOpen: false,
     },
     reducers:{
         toggleSettingPopup(state){//flip
@@ -29,6 +33,12 @@ const popupSlice =createSlice({
         toggleAddNewAdminPopup(state){//flip
             state.addNewAdminPopup=!state.addNewAdminPopup
         },
+        toggleBookManagement: (state) => {
+            state.bookManagementOpen = !state.bookManagementOpen;
+          },
+        toggleUsersComponent: (state) => {
+            state.usersComponentOpen = !state.usersComponentOpen;
+          },
         closeAllPopup(state){
             state.settingPopup=false;
             state.addBookPopup=false;
@@ -38,6 +48,12 @@ const popupSlice =createSlice({
             state.addNewAdminPopup=false;
 
         },
+        resetPopups: (state) => {
+            state.bookManagementOpen = false;
+            state.addNewAdminPopup = false;
+            state.usersComponentOpen = false;
+            state.settingPopup = false;
+          },
     },
 });
 export const{
@@ -47,6 +63,10 @@ export const{
     toggleAddNewAdminPopup,
     togglereadBookPopup,
     togglerecordBookPopup,
-    togglereturnBookPopup}=popupSlice.actions;
+    togglereturnBookPopup,
+    toggleBookManagement,
+    toggleUsersComponent}=popupSlice.actions;
+
+export const resetPopups = createAction('popup/resetPopups');
 
 export default popupSlice.reducer;

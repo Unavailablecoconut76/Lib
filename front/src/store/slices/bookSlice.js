@@ -20,7 +20,7 @@ const bookSlice=createSlice({
             state.loading=false;
             state.books=action.payload;
         },
-        fetchBooksFailed(state){
+        fetchBooksFailed(state,action){
             state.loading=true;
             state.error=action.payload;
             state.message=null;
@@ -43,6 +43,20 @@ const bookSlice=createSlice({
             state.message=null;
             state.loading=false;
         },
+        // New reducers for delete book
+        deleteBookRequest(state) {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+          },
+          deleteBookSuccess(state, action) {
+            state.loading = false;
+            state.message = action.payload;
+          },
+          deleteBookFailed(state, action) {
+            state.loading = false;
+            state.error = action.payload;
+          }
     }
 })
 
@@ -72,6 +86,24 @@ export const addBook =(data)=>async(dispatch)=>{
         dispatch(bookSlice.actions.addBookFailed(err.response.data.message));
     });
 };
+
+// New action creator for delete book
+export const deleteBook = (bookId) => async (dispatch) => {
+    dispatch(bookSlice.actions.deleteBookRequest());
+    await axios.delete(`http://localhost:4000/api/v1/book/delete/${bookId}`, {
+      withCredentials: true
+    })
+    .then(res => {
+      dispatch(bookSlice.actions.deleteBookSuccess(res.data.message));
+      toast.success(res.data.message);
+      dispatch(fetchAllBooks()); // Refresh book list
+    })
+    .catch(err => {
+      dispatch(bookSlice.actions.deleteBookFailed(err.response.data.message));
+      toast.error(err.response.data.message);
+    });
+  };
+
 export const resetBookSlice=()=>(dispatch)=>{
     dispatch(bookSlice.actions.resetBookSlice());
 }

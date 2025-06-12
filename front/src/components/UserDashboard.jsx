@@ -19,6 +19,7 @@ import {
   ArcElement,
 } from "chart.js";
 import logo from "../assets/black-logo.png";
+import { motion } from "framer-motion"; // Add this import
 
 ChartJS.register(
   CategoryScale,
@@ -63,53 +64,6 @@ const UserDashboard = () => {
     setOverdueBooks(overdue);
   },[userBorrowedBooks])//will execute when change in dependency;userBorrowedBooks
 
-  const handlePrint = () => {
-    const printContent = `
-      LIBRARY MANAGEMENT SYSTEM - USER REPORT
-      --------------------------------------
-      User: ${user?.name}
-      Email: ${user?.email}
-      Date: ${new Date().toLocaleDateString()}
-      Time: ${new Date().toLocaleTimeString()}
-      
-      BORROWING STATISTICS
-      -------------------
-      Currently Borrowed: ${totalBorrowedBooks}
-      Total Returned: ${totalReturnedBooks}
-      Overdue Books: ${overdueBooks}
-      
-      Monthly Borrowing Summary
-      ------------------------
-      ${Object.entries(monthlyBorrowStats)
-        .map(([month, count]) => {
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          return `${monthNames[month]}: ${count} books`;
-        })
-        .join('\n')}
-    `;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>User Report - ${user?.name}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { font-size: 20px; margin-bottom: 20px; }
-            .section { margin-bottom: 15px; }
-            .stats { margin-left: 20px; }
-            .timestamp { color: #666; font-size: 14px; }
-          </style>
-        </head>
-        <body>
-          <pre>${printContent}</pre>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-  };
-
   const pieData={
     labels:["Total Borrowed Books","Total returned Books"],
     datasets:[
@@ -132,30 +86,107 @@ const UserDashboard = () => {
     }]
   };
 
+  // Add animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 }
+    }
+  };
+
   return <>
-    <main className="relative flex-1 p-4 pt-24"> {/* Reduced padding */}
+    <main className="relative flex-1 p-4 pt-24 bg-gray-50">
       <Header/>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4"> {/* Reduced gap */}
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 xl:grid-cols-3 gap-4"
+      >
         {/* Stats Cards */}
-        <div className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3"> {/* Reduced gap */}
-          <div className="bg-white p-4 rounded-lg shadow-sm"> {/* Reduced padding */}
-            <h3 className="text-lg font-semibold">Currently Borrowed</h3>
-            <p className="text-2xl font-bold mt-1">{totalBorrowedBooks}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm"> {/* Reduced padding */}
-            <h3 className="text-lg font-semibold">Total Returned</h3>
-            <p className="text-2xl font-bold mt-1">{totalReturnedBooks}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm"> {/* Reduced padding */}
-            <h3 className="text-lg font-semibold">Overdue Books</h3>
-            <p className="text-2xl font-bold mt-1 text-red-500">{overdueBooks}</p>
-          </div>
-        </div>
+        <motion.div 
+          variants={itemVariants}
+          className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3"
+        >
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <span className="bg-gray-100 p-3 rounded-full transform transition-transform hover:rotate-12">
+                <img src={bookIcon} alt="borrowed" className="w-6 h-6" />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700">Currently Borrowed</h3>
+                <motion.p 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-2xl font-bold mt-1 text-black"
+                >
+                  {totalBorrowedBooks}
+                </motion.p>
+              </div>
+            </div>
+          </motion.div>
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <span className="bg-gray-100 p-3 rounded-full transform transition-transform hover:rotate-12">
+                <img src={bookIcon} alt="returned" className="w-6 h-6" />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700">Total Returned</h3>
+                <motion.p 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-2xl font-bold mt-1 text-black"
+                >
+                  {totalReturnedBooks}
+                </motion.p>
+              </div>
+            </div>
+          </motion.div>
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <span className="bg-gray-100 p-3 rounded-full transform transition-transform hover:rotate-12">
+                <img src={bookIcon} alt="overdue" className="w-6 h-6" />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700">Overdue Books</h3>
+                <motion.p 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-2xl font-bold mt-1 text-red-500"
+                >
+                  {overdueBooks}
+                </motion.p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Charts Section */}
-        <div className="xl:col-span-2 bg-white p-4 rounded-lg shadow-sm"> {/* Reduced padding */}
-          <h3 className="text-lg font-semibold mb-2">Borrowing History</h3>
-          <div className="h-[250px]"> {/* Reduced height */}
+        <motion.div 
+          variants={itemVariants}
+          className="xl:col-span-2 bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+        >
+          <h3 className="text-lg font-semibold mb-4 text-gray-800">Borrowing History</h3>
+          <div className="h-[250px]">
             <Bar 
               data={barData} 
               options={{
@@ -194,7 +225,7 @@ const UserDashboard = () => {
               }} 
             />
           </div>
-        </div>
+        </motion.div>
 
         <div className="bg-white p-4 rounded-lg shadow-sm"> {/* Reduced padding */}
           <h3 className="text-lg font-semibold mb-2">Books Status</h3>
@@ -219,64 +250,57 @@ const UserDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3"> {/* Reduced gap */}
-          <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"> {/* Reduced padding */}
+        <motion.div 
+          variants={itemVariants}
+          className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4"
+        >
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-white p-5 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300"
+          >
             <div className="flex items-center gap-3">
-              <span className="bg-gray-100 p-3 rounded-full">
-                <img src={bookIcon} alt="book" className="w-6 h-6"/>
+              <span className="bg-gray-100 p-3 rounded-full transform transition-all duration-300 group-hover:rotate-12">
+                <img src={bookIcon} alt="book" className="w-6 h-6" />
               </span>
               <div>
                 <h4 className="font-semibold">Browse Books</h4>
                 <p className="text-sm text-gray-600">Find new books to borrow</p>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"> {/* Reduced padding */}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-white p-5 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300"
+          >
             <div className="flex items-center gap-3">
-              <span className="bg-gray-100 p-3 rounded-full">
-                <img src={returnIcon} alt="return" className="w-6 h-6"/>
+              <span className="bg-gray-100 p-3 rounded-full transform transition-all duration-300 group-hover:rotate-12">
+                <img src={returnIcon} alt="return" className="w-6 h-6" />
               </span>
               <div>
                 <h4 className="font-semibold">Return Books</h4>
                 <p className="text-sm text-gray-600">Process book returns</p>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"> {/* Reduced padding */}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-white p-5 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300"
+          >
             <div className="flex items-center gap-3">
-              <span className="bg-gray-100 p-3 rounded-full">
-                <img src={browseIcon} alt="browse" className="w-6 h-6"/>
+              <span className="bg-gray-100 p-3 rounded-full transform transition-all duration-300 group-hover:rotate-12">
+                <img src={browseIcon} alt="browse" className="w-6 h-6" />
               </span>
               <div>
                 <h4 className="font-semibold">View History</h4>
                 <p className="text-sm text-gray-600">Check borrowing history</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <button
-        onClick={handlePrint}
-        className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-full shadow-lg hover:bg-gray-800 flex items-center gap-2"
-      >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-5 w-5" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" 
-          />
-        </svg>
-        Print Report
-      </button>
+          </motion.button>
+        </motion.div>
+      </motion.div>
     </main>
   </>;
 };

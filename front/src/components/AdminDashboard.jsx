@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import adminIcon from "../assets/pointing.png";
+import { useNavigate } from "react-router-dom";
 import usersIcon from "../assets/people-black.png";
 import bookIcon from "../assets/book-square.png";
 import { Pie, Bar } from "react-chartjs-2";
@@ -17,7 +18,13 @@ import {
   ArcElement,
 } from "chart.js";
 import logo from "../assets/black-logo.png";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { toggleBookManagement, toggleAddNewAdminPopup, toggleUsersComponent, resetPopups } from "../store/slices/popUpSlice";
+import BookManagement from "./BookManagement";
+import AddNewAdmin from "../popups/AddNewAdmin";
+import Users from "./Users"; 
+import { motion } from "framer-motion"; 
+import { logout } from "../store/slices/authSlice"; // Import logout action
 
 ChartJS.register(
   CategoryScale,
@@ -32,11 +39,16 @@ ChartJS.register(
 );
 
 const AdminDashboard = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { users } = useSelector((state) => state.user);
   const { books } = useSelector((state) => state.book);
   const { allBorrowedBooks } = useSelector((state) => state.borrow);
   const { settingPopup } = useSelector((state) => state.popup);
+  const { bookManagementOpen } = useSelector((state) => state.popup);
+  const { addNewAdminPopup } = useSelector((state) => state.popup);
+  const { usersComponentOpen } = useSelector((state) => state.popup);
+  const navigate = useNavigate();
 
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalAdmin, setTotalAdmin] = useState(0);
@@ -73,6 +85,12 @@ const AdminDashboard = () => {
   };
 
   const handlePrint = () => {
+    const topUsersFormatted = getTopUsers()
+      .map((user, index) => 
+        `${index + 1}. ${user.name} - ${user.borrowedBooks.length} books borrowed`
+      )
+      .join('\n      ');
+
     const printContent = `
       LIBRARY MANAGEMENT SYSTEM - ADMIN REPORT
       --------------------------------------
@@ -91,6 +109,10 @@ const AdminDashboard = () => {
       Currently Borrowed: ${totalBorrowedBooks}
       Total Returned: ${totalReturnedBooks}
       Return Rate: ${((totalReturnedBooks / (totalBorrowedBooks + totalReturnedBooks)) * 100).toFixed(2)}%
+      
+      TOP ACTIVE USERS
+      ---------------
+      ${topUsersFormatted}
     `;
 
     const printWindow = window.open('', '_blank');
@@ -145,24 +167,61 @@ const AdminDashboard = () => {
     printWindow.print();
   };
 
+  const getTopUsers = () => {
+    return users
+      .filter(user => user.role === "User")
+      .sort((a, b) => b.borrowedBooks.length - a.borrowedBooks.length)
+      .slice(0, 3);
+  };
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  const handleLogout = () => {
+    dispatch(logout()); 
+    navigate('/login');
+  };
+
   return (
-    <>
+    <div className="w-full bg-gray-50">
       <main className="relative flex-1 p-4 pt-24">
-        <Header />
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          {/* Stats Cards - First Row */}
-          <div className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
+        <Header /> {/* Remove onLogoClick prop */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 xl:grid-cols-3 gap-4"
+        >
+          {/* Stats Cards with hover effects */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3"
+          >
+            {/* Update each stat card */}
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-white p-4 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300"
+            >
               <div className="flex items-center gap-3">
-                <span className="bg-gray-100 p-3 rounded-full">
+                <span className="bg-gray-100 p-3 rounded-full transform transition-transform hover:rotate-12">
                   <img src={usersIcon} alt="users" className="w-6 h-6" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-semibold">Total Users</h3>
-                  <p className="text-2xl font-bold mt-1">{totalUsers}</p>
+                  <h3 className="text-lg font-semibold text-gray-700">Total Users</h3>
+                  <motion.p 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="text-2xl font-bold mt-1 text-black"
+                  >
+                    {totalUsers}
+                  </motion.p>
                 </div>
               </div>
-            </div>
+            </motion.div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex items-center gap-3">
                 <span className="bg-gray-100 p-3 rounded-full">
@@ -185,48 +244,89 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Charts Section */}
-          <div className="xl:col-span-2 bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-2">Books Status Overview</h3>
-            <div className="h-[250px]">
-              <Bar
-                data={{
-                  labels: ["Borrowed Books", "Returned Books"],
-                  datasets: [
-                    {
-                      label: "Books Status",
-                      data: [totalBorrowedBooks, totalReturnedBooks],
-                      backgroundColor: ["#3D3E3E", "#151619"],
-                      borderColor: ["#3D3E3E", "#151619"],
-                      borderWidth: 1,
+          {/* Charts Section with animations */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden" 
+          >
+            {/* Bar Chart Container */}
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="bg-white p-6 rounded-lg shadow-md transition-all duration-300 overflow-hidden" 
+            >
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">Books Status Overview</h3>
+              <div className="h-[250px] w-full">
+                <Bar
+                  data={{
+                    labels: ["Borrowed Books", "Returned Books"],
+                    datasets: [
+                      {
+                        label: "Books Status",
+                        data: [totalBorrowedBooks, totalReturnedBooks],
+                        backgroundColor: ["#3D3E3E", "#151619"],
+                        borderColor: ["#3D3E3E", "#151619"],
+                        borderWidth: 1,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { size: 11 } },
+                      },
+                      x: {
+                        ticks: { font: { size: 11 } },
+                      },
                     },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: true,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      ticks: { stepSize: 1, font: { size: 11 } },
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
                     },
-                    x: {
-                      ticks: { font: { size: 11 } },
-                    },
-                  },
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
+                  }}
+                />
+              </div>
+            </motion.div>
 
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+            {/* Top Users Table Container */}
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="bg-white p-6 rounded-lg shadow-md hidden lg:block transition-all duration-300 overflow-hidden" 
+            >
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">Top Active Users</h3>
+              <div className="w-full">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 border-b">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 border-b">Books Borrowed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getTopUsers().map((user, index) => (
+                      <motion.tr 
+                        key={user._id}
+                        whileHover={{ backgroundColor: "#f9fafb" }}
+                        className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                      >
+                        <td className="px-4 py-3 text-sm text-gray-900">{user.name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{user.borrowedBooks.length}</td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <div className="bg-white p-4 rounded-lg shadow-sm overflow-hidden"> 
             <h3 className="text-lg font-semibold mb-2">Distribution</h3>
             <div className="h-[250px] flex items-center justify-center">
               <Pie
@@ -248,21 +348,36 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          {/* Quick Action Buttons with hover effects */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white p-5 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300"
+              onClick={() => dispatch(toggleBookManagement())}
+            >
               <div className="flex items-center gap-3">
                 <span className="bg-gray-100 p-3 rounded-full">
                   <img src={bookIcon} alt="manage books" className="w-6 h-6" />
                 </span>
                 <div>
                   <h4 className="font-semibold">Manage Books</h4>
-                  <p className="text-sm text-gray-600">Add or update library books</p>
+                  <p className="text-sm text-gray-600" >Add or update library books</p>
                 </div>
               </div>
-            </div>
+            </motion.button>
 
-            <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white p-5 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300"
+              onClick={() => dispatch(toggleUsersComponent())}
+            >
               <div className="flex items-center gap-3">
                 <span className="bg-gray-100 p-3 rounded-full">
                   <img src={usersIcon} alt="users" className="w-6 h-6" />
@@ -272,9 +387,14 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-600">View and manage users</p>
                 </div>
               </div>
-            </div>
+            </motion.button>
 
-            <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white p-5 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300"
+              onClick={() => dispatch(toggleAddNewAdminPopup())}
+            >
               <div className="flex items-center gap-3">
                 <span className="bg-gray-100 p-3 rounded-full">
                   <img src={adminIcon} alt="admin" className="w-6 h-6" />
@@ -284,12 +404,17 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-600">Create new admin account</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <button
+            </motion.button>
+          </motion.div>
+        </motion.div>
+
+        {/* Floating Action Button with animation */}
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={handlePrint}
-          className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-full shadow-lg hover:bg-gray-800 flex items-center gap-2"
+          className="fixed bottom-6 right-6 bg-black text-white px-6 py-3 rounded-full 
+            shadow-lg hover:bg-gray-800 flex items-center gap-2 transition-all duration-300"
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -305,10 +430,27 @@ const AdminDashboard = () => {
               d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" 
             />
           </svg>
-          Generate Report
-        </button>
+          <span>Generate Report</span>
+        </motion.button>
       </main>
-    </>
+
+      {/* Render BookManagement below dashboard when toggled */}
+      {bookManagementOpen && (
+        <div className="border-t border-gray-200">
+          <BookManagement hideHeader={true} />
+        </div>
+      )}
+
+      {/* Render AddNewAdmin popup when toggled */}
+      {addNewAdminPopup && <AddNewAdmin />}
+
+      {/* Add Users component render */}
+      {usersComponentOpen && (
+        <div className="border-t border-gray-200">
+          <Users hideHeader={true} />
+        </div>
+      )}
+    </div>
   );
 };
 

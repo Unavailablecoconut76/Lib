@@ -31,3 +31,6 @@ const bookSchema=new mongoose.Schema({
 });
 
 export const Book=mongoose.model("Book",bookSchema);
+
+//additional copies required are 05
+//max intake for each book or something is 180.
