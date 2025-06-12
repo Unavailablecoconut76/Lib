@@ -11,12 +11,16 @@ import expressFileupload from"express";
 import userRouter from "./routes/userRouter.js";
 
 
-config({path:"./config/config.env"})//load env file for port deifination
+config({path:"./config/config.env"});
 
 export const app=express();
 
+// Update CORS configuration to include both development and production URLs
 app.use(cors({
-    origin:[process.env.FRONTEND_URL],
+    origin: [
+        process.env.FRONTEND_URL, // Development URL
+        'https://lib-eosin.vercel.app' // Production URL
+    ],
     methods:["GET","POST","PUT","DELETE"],
     credentials:true
 }));
