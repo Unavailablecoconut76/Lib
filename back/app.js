@@ -28,7 +28,9 @@ app.use(express.urlencoded({extended:true}));
 app.use(expressFileupload({
     useTempfiles:true,
     tempFileDir:"/tmp/"
-}))
+}));
+
+app.set('trust proxy', 1); 
 
 app.use("/api/v1/auth",authRouter);
 app.use("/api/v1/book",bookRouter);
