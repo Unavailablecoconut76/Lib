@@ -4,6 +4,7 @@ import ErrorHandler from "./errorMiddlewares.js";
 import { User } from "../models/userModels.js";
 
 export const isAuthenticated =catchAsyncErrors(async (req,res,next)=>{
+    console.log("Cookies received:", req.cookies);
     const {token}=req.cookies;
     if(!token)
         return next(new ErrorHandler("user not authenticated",400));
