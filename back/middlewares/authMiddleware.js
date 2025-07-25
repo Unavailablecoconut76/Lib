@@ -6,7 +6,7 @@ import { User } from "../models/userModels.js";
 export const isAuthenticated =catchAsyncErrors(async (req,res,next)=>{
     const {token}=req.cookies;
     if(!token)
-        return next(new ErrorHandler("user not authenticated",400));
+        return next(new ErrorHandler("user not authenticated",401));
     const decoded=jwt.verify(token,process.env.JWT_SECRET_KEY);//to check if the token belongs to that user only
     console.log(decoded);
     req.user=await User.findById(decoded.id);

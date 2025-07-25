@@ -17,8 +17,8 @@ const Header = () => {
       const noww= new Date();
         const hours =noww.getHours()%12||12;
         const minutes = noww.getMinutes().toString().padStart(2,"0");
-        const ampm = noww.getHours >=12?"PM":"AM";
-        setCurrentTime(`${hours}:${minutes}:${ampm}`);
+        const ampm = noww.getHours() >=12?"PM":"AM";
+        setCurrentTime(`${hours}:${minutes} ${ampm}`);
 
         const options={month:"short",dat :"numeric",year:"numeric"};
         setCurrentDate(noww.toLocaleDateString("en-India",options))

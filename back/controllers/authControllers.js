@@ -141,7 +141,7 @@ export const forgotPassword =catchAsyncErrors(async(req,res,next)=>{
         user.resetPasswordToken=undefined;
         user.resetpasswordExpire=undefined;
         await user.save({validateBeforeSave:false});
-        return next(new ErrorHandler(error.message,500));
+        return next(new ErrorHandler(error.message || "Cannot send email",500));
     }
 })
 
