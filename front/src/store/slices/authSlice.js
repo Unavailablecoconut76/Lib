@@ -218,7 +218,8 @@ export const getUser =()=>async(dispatch)=>{
     }).then(res=>{
         dispatch(authSlice.actions.getUserSuccess(res.data));
     }).catch(error=>{
-        dispatch(authSlice.actions.getUserFailed(error.response.data.message));
+        const errorMessage = error  .response?.data?.message || "Network error. Please try again.";
+        dispatch(authSlice.actions.getUserFailed(errorMessage));
     });
 };
 

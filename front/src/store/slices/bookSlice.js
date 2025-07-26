@@ -21,7 +21,7 @@ const bookSlice=createSlice({
             state.books=action.payload;
         },
         fetchBooksFailed(state,action){
-            state.loading=true;
+            state.loading=false;
             state.error=action.payload;
             state.message=null;
         },
@@ -66,7 +66,8 @@ export const fetchAllBooks =()=>async(dispatch)=>{
     .then(res=>{
         dispatch(bookSlice.actions.fetchBooksSuccess(res.data.books))
     }).catch(err=>{
-        dispatch(bookSlice.actions.fetchBooksFailed(err.response.data.message));
+        const errorMessage = err.response?.data?.message || "Network error. Please try again.";
+        dispatch(bookSlice.actions.fetchBooksFailed(errorMessage));
     });
 };
 
