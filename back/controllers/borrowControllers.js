@@ -20,10 +20,11 @@ export const recordBorrowedBook=catchAsyncErrors(async(req,res,next)=>{
     if(!book)
         return next(new ErrorHandler("book not found",400));
 
-    const user= await User.findOne({email,role:"User"});//if admin cant borrow ,then, const user= await User.findOne({email,role:"User"})
+    const user= await User.findOne({email});//if admin cant borrow ,then, const user= await User.findOne({email,role:"User"})
 
     if(!user)
-        return next(new ErrorHandler("user not founddd",400));
+        return next(new ErrorHandler("user naahi",400));
+    if (user.blacklisted) return next(new ErrorHandler("User is blacklisted. Unblacklist first.", 403));
 
     if(book.quantity===0)
         return next(new ErrorHandler("no more books available"));
@@ -42,7 +43,7 @@ export const recordBorrowedBook=catchAsyncErrors(async(req,res,next)=>{
     user.borrowedBooks.push({
         bookId:book._id,
         bookTitle:book.title,
-        borrowedBook:new Date(),
+        borrowDate:new Date(),
         dueDate:new Date(Date.now()+ 7 * 24 * 60 * 60* 1000)
     });
     await user.save();

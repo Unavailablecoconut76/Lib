@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema({
     verificationCode:Number,
     resetPasswordToken:String,
     resetpasswordExpire:Date,
+    blacklisted: {
+        type: Boolean,
+        default: false
+    },
     },
     {
         timestamps:true
