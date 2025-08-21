@@ -24,6 +24,7 @@ export const registerNewAdmin=catchAsyncErrors(async(req,res,next)=>{
         return next(new ErrorHandler("user already registered",400));
 
     const {avatar}=req.files;
+    console.log(req.files);
     const allowedFormats=["image/png","image/jpeg","image/webp"];
     if(!allowedFormats.includes(avatar.mimetype)){
         return next(new ErrorHandler("File format not supported",400));
