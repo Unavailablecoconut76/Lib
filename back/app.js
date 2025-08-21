@@ -7,7 +7,7 @@ import { errorMiddleware } from "./middlewares/errorMiddlewares.js";
 import authRouter from "./routes/authRouter.js";
 import bookRouter from "./routes/bookRouter.js";
 import borrowRouter from "./routes/borrowRouter.js";
-import expressFileupload from"express";
+import expressFileupload from "express-fileupload";
 import userRouter from "./routes/userRouter.js";
 
 
