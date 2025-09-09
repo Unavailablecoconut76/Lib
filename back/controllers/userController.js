@@ -1,6 +1,8 @@
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/errorMiddlewares.js";
 import { User } from "../models/userModels.js";
+import { Book } from "../models/bookModel.js";
+import { Borrow } from "../models/borrowModel.js";
 import bcrypt from "bcrypt";
 import {v2 as cloudinary} from "cloudinary";
 
@@ -68,5 +70,60 @@ export const toggleBlacklistUser = catchAsyncErrors(async (req, res, next) => {
         success: true,
         message: `User ${user.blacklisted ? "blacklisted" : "un-blacklisted"} successfully`,
         user
+    });
+});
+
+export const deleteAccount = catchAsyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.user._id);
+
+    // Check for pending borrows
+    const pendingBorrows = await Borrow.find({
+        "user.email": user.email,
+        returnDate: null
+    });
+
+    if (pendingBorrows.length > 0) {
+        return next(new ErrorHandler("Cannot delete account - please return all borrowed books first", 400));
+    }
+
+    // Delete all related records
+    await Borrow.deleteMany({ "user.email": user.email });
+    await user.deleteOne();
+
+    res.status(200).json({
+        success: true,
+        message: "Account deleted successfully"
+    });
+});
+
+export const bulkImportBooks = catchAsyncErrors(async (req, res, next) => {
+    const { books } = req.body;
+
+    if (!Array.isArray(books)) {
+        return next(new ErrorHandler("Invalid data format", 400));
+    }
+
+    const validatedBooks = books.map(book => {
+        if (!book.title || !book.author || !book.quantity || 
+            typeof book.quantity !== 'number' || book.quantity < 0) {
+            throw new ErrorHandler("Invalid book data format", 400);
+        }
+
+        return {
+            title: book.title,
+            author: book.author,
+            description: book.description || "",
+            quantity: book.quantity,
+            fine: book.fine || 0,
+            availibility: book.quantity > 0
+        };
+    });
+
+    const importedBooks = await Book.insertMany(validatedBooks);
+
+    res.status(200).json({
+        success: true,
+        message: `Successfully imported ${importedBooks.length} books`,
+        books: importedBooks
     });
 });

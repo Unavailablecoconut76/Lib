@@ -3,28 +3,21 @@ import { BookRequest } from '../models/bookRequestModel.js';
 import { Book } from '../models/bookModel.js';
 
 export const startRequestCleanup = () => {
-  // Run every hour
-  cron.schedule('0 * * * *', async () => {
-    try {
-      // Find expired approved requests
-      const expiredRequests = await BookRequest.find({
-        status: 'approved',
-        validTill: { $lt: new Date() }
-      });
+    cron.schedule('0 * * * *', async () => {
+        try {
+            const expiredRequests = await BookRequest.find({
+                status: 'pending',
+                validTill: { $lt: new Date() }
+            });
 
-      // Restore book quantities for expired requests
-      for (const request of expiredRequests) {
-        const book = await Book.findById(request.book);
-        if (book) {
-          book.quantity++;
-          book.availibility = true;
-          await book.save();
+            for (const request of expiredRequests) {
+                request.status = 'rejected';
+                await request.save();
+            }
+
+            console.log(`Cleaned up ${expiredRequests.length} expired requests`);
+        } catch (error) {
+            console.error('Request cleanup error:', error);
         }
-        request.status = 'rejected';
-        await request.save();
-      }
-    } catch (error) {
-      console.error('Request cleanup error:', error);
-    }
-  });
+    });
 };

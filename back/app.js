@@ -9,7 +9,8 @@ import bookRouter from "./routes/bookRouter.js";
 import borrowRouter from "./routes/borrowRouter.js";
 import expressFileupload from "express-fileupload";
 import userRouter from "./routes/userRouter.js";
-
+import bookRequestRouter from "./routes/bookRequestRouter.js"; // Import the bookRequestRouter
+import { startRequestCleanup } from './utils/requestCleanup.js';
 
 config({path:"./config/config.env"})//load env file for port deifination
 
@@ -33,9 +34,11 @@ app.use(expressFileupload({
 app.use("/api/v1/auth",authRouter);
 app.use("/api/v1/book",bookRouter);
 app.use("/api/v1/borrow",borrowRouter);
-app.use("/api/v1/user",userRouter);//u stupid piece of shit get OUT----nodemon wasnt being used until NOWWW??tf were u doin??
+app.use("/api/v1/user",userRouter);
+app.use("/api/v1/book-requests", bookRequestRouter); // Add this line
 
 //http://localhost:4000/api/v1/auth/register
 connectDB();
+startRequestCleanup(); // Add this line
 
 app.use(errorMiddleware);
