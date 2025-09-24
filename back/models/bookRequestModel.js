@@ -36,6 +36,6 @@ const bookRequestSchema = new mongoose.Schema({
       return new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days from now
     }
   }
-});
+},{timestamps:true});
 
 export const BookRequest = mongoose.model("BookRequest", bookRequestSchema);

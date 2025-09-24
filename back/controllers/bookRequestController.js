@@ -76,3 +76,15 @@ export const getPendingRequests = catchAsyncErrors(async (req, res) => {
     requests
   });
 });
+
+// Add this new controller function
+export const getMyRequests = catchAsyncErrors(async (req, res) => {
+  const requests = await BookRequest.find({ 
+    "user.email": req.user.email 
+  }).populate("book");
+
+  res.status(200).json({
+    success: true,
+    requests
+  });
+});
