@@ -40,10 +40,10 @@ export const handleBookRequest = catchAsyncErrors(async (req, res, next) => {
   const { requestId } = req.params;
   const { status } = req.body;
 
-  const request = await BookRequest.findById(requestId);
+  const request = await BookRequest.findById(requestId).populate("book");
   if (!request) return next(new ErrorHandler("Request not found", 404));
 
-  const book = await Book.findById(request.book);
+  const book = await Book.findById(request.book._id);
   if (!book) return next(new ErrorHandler("Book not found", 404));
 
   if (status === "approved" && book.quantity === 0) {
@@ -59,6 +59,21 @@ export const handleBookRequest = catchAsyncErrors(async (req, res, next) => {
     await book.save();
   }
 
+  if (status === "approved") {
+    setTimeout(async () => {
+      const borrowRecord = await Borrow.findOne({
+        "user.email": request.user.email,
+        book: book._id,
+        createdAt: { $gt: request.updatedAt }
+      });
+
+      if (!borrowRecord) {
+        book.quantity++;
+        book.availibility = true;
+        await book.save();
+      }
+    }, 2 * 24 * 60 * 60 * 1000); 
+  }
   res.status(200).json({
     success: true,
     message: `Request ${status} successfully`
