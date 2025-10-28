@@ -65,8 +65,17 @@ const ResetPassword = () => {
               <img src={logo} alt="logo" className="h-24 w-auto" />
             </div>
           </div>
-          <h1 className="text-4xl font-medium text-center mb-5 overflow-hidden">Reset Password</h1>
-          <p className="text-gray-800 text-center mb-12">Please enter new password</p>
+          <h1 className="text-4xl font-medium text-center mb-5 overflow-hidden">
+  Reset Password
+  {user?.email && (
+    <span className="block text-base font-normal mt-2 text-gray-600">
+      for <span className="font-semibold">{user.email}</span>
+    </span>
+  )}
+</h1>
+<p className="text-gray-800 text-center mb-12">
+  Please enter new password {user?.email && <>for <span className="font-semibold">{user.email}</span></>}
+</p>
           <form onSubmit={handleResetPassword}>
             <div className="mb-4">
               <input type="password"

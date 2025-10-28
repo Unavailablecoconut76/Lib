@@ -54,8 +54,17 @@ const ForgotPassword = () => {
             <img src={logo_with_title_black} alt="logo_with_title_black" className="h-24 w-auto" />
           </div>
         </div>
-        <h1 className="text-4xl font-medium text-center mb-5 overflow-hidden">Forgot Password</h1>
-        <p className="text-gray-800 text-center mb-12">Please enter email</p>
+        <h1 className="text-4xl font-medium text-center mb-5 overflow-hidden">
+          Forgot Password
+          {email && (
+            <span className="block text-base font-normal mt-2 text-gray-600">
+              for <span className="font-semibold">{email}</span>
+            </span>
+          )}
+        </h1>
+        <p className="text-gray-800 text-center mb-12">
+          Please enter email {email && <>for <span className="font-semibold">{email}</span></>}
+        </p>
         <form onSubmit={handleForgotPassword}>
         <div className="mb-4">
           <input type="email"

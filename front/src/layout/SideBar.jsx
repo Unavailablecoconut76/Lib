@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import AddNewAdmin from "../popups/AddNewAdmin";
 import SettingPopup from "../popups/SettingPopup";
 import { useNavigate } from 'react-router-dom';
+import { FaTools } from "react-icons/fa";
 
 const SideBar = ({ isSideBarOpen, setIsSideBarOpen, setSelectedComponent }) => {
   const [activeButton, setActiveButton] = useState("Dashboard");
@@ -115,6 +116,17 @@ const SideBar = ({ isSideBarOpen, setIsSideBarOpen, setSelectedComponent }) => {
               >
                 <img src={usersIcon} alt="users" className="w-5 h-5" /> 
                 <span>Users</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedComponent("Utility");
+                  setActiveButton("Utility");
+                }}
+                className={buttonClassName("Utility")}
+              >
+                <FaTools className="w-5 h-5" />
+                <span>Utility</span>
               </button>
 
               <button

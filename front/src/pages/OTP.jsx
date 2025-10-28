@@ -46,8 +46,15 @@ const OTP = () => {
               <img src={logo_with_title_black} alt="logo" className="h-24 w-auto object-contain" draggable={false} />
             </div>
           </div>
-          <h1 className="text-4xl font-medium text-center mb-12 overflow-hidden">Check your mailbox</h1>
-          <p className="text-gray-800 text-center mb-12 overflow-hidden">Please enter OTP</p>
+          <h1 className="text-4xl font-medium text-center mb-12 overflow-hidden">
+            Check your mailbox
+            <span className="block text-base font-normal mt-2 text-gray-600">
+              for <span className="font-semibold">{email}</span>
+            </span>
+          </h1>
+          <p className="text-gray-800 text-center mb-12 overflow-hidden">
+            Please enter OTP sent to <span className="font-semibold">{email}</span>
+          </p>
           <form onSubmit={handleOtpVerification}>
             <div className="mb-4">
               <input

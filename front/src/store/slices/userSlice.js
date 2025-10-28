@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { toggleAddNewAdminPopup } from "./popUpSlice";
 
+const appURL=import.meta.env.VITE_APP_URL;
 const userSlice =createSlice({
     name:"user",
     initialState:{
@@ -35,7 +36,7 @@ const userSlice =createSlice({
 
 export const fetchAllUsers=()=>async(dispatch)=>{
     dispatch(userSlice.actions.fetchAllUsersRequest());
-    await axios.get("http://localhost:4000/api/v1/user/all",{withCredentials:true})
+    await axios.get(`${appURL}/api/v1/user/all`,{withCredentials:true})
     .then(res=>{
         dispatch(userSlice.actions.fetchAllUsersSuccess(res.data.users))
     }).catch(err=>{
@@ -46,18 +47,17 @@ export const fetchAllUsers=()=>async(dispatch)=>{
 
 export const addNewAdmin=(data)=>async(dispatch)=>{
     dispatch(userSlice.actions.addNewAdminRequest());
-    await axios.post("http://localhost:4000/api/v1/user/add/new-admin",data,{
+    await axios.post(`${appURL}/api/v1/user/add/new-admin`,data,{
         withCredentials:true,
         headers:{
             "Content-Type":"multipart/form-data",
         },
-
     }).then(res=>{
         dispatch(userSlice.actions.addNewAdminSuccess());
         toast.success(res.data.message);
         dispatch(toggleAddNewAdminPopup());
     }).catch(err=>{
-        userSlice.actions.addNewAdminFailed();
+        dispatch(userSlice.actions.addNewAdminFailed()); // <-- FIXED
         toast.error(err.response.data.message);
     });
 };

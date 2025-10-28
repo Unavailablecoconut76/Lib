@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import {toast} from "react-toastify";
+const appURL=import.meta.env.VITE_APP_URL;
 
 const authSlice= createSlice({
     name:"auth",
@@ -138,6 +140,20 @@ const authSlice= createSlice({
             state.error=action.payload;
         },
 
+        toggleBlacklistRequest(state){
+            state.loading=true;
+            state.error=null;
+            state.message=null;
+        },
+        toggleBlacklistSuccess(state,action){
+            state.loading=false;
+            state.message=action.payload.message;
+        },
+        toggleBlacklistFailed(state,action){
+            state.loading=false;
+            state.error=action.payload;
+        },
+
         resetAuthSlice(state){
             state.error=null;
             state.loading=false;
@@ -154,7 +170,7 @@ export const resetAuthSlice=()=>(dispatch)=>{
 
 export const register =(data)=>async(dispatch)=>{
     dispatch(authSlice.actions.registerRequest());
-    await axios.post("http://localhost:4000/api/v1/auth/register",data,{
+    await axios.post(`${appURL}/api/v1/auth/register`,data,{
         withCredentials:true,
         headers:{
             "Content-Type":"application/json",
@@ -168,7 +184,7 @@ export const register =(data)=>async(dispatch)=>{
 
 export const otpVerification =(email,otp)=>async(dispatch)=>{
     dispatch(authSlice.actions.otpVerificationRequest());
-    await axios.post("http://localhost:4000/api/v1/auth/verify-otp",{email,otp},{
+    await axios.post(`${appURL}/api/v1/auth/verify-otp`,{email,otp},{
         withCredentials:true,
         headers:{
             "Content-Type":"application/json",
@@ -183,7 +199,7 @@ export const otpVerification =(email,otp)=>async(dispatch)=>{
 export const login = (data) => async(dispatch) => {
     dispatch(authSlice.actions.LoginRequest());
     await axios.post(
-        "http://localhost:4000/api/v1/auth/login",
+        `${appURL}/api/v1/auth/login`,
         data,
         {
             withCredentials: true,
@@ -192,7 +208,10 @@ export const login = (data) => async(dispatch) => {
             }
         }
     ).then(res => {
-        dispatch(authSlice.actions.LoginSuccess({message:res.data}));
+        dispatch(authSlice.actions.LoginSuccess({
+            message: res.data.message,
+            user: res.data.user
+        }));
     }).catch(error => {
         const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
         dispatch(authSlice.actions.LoginFailed(errorMessage));
@@ -201,7 +220,7 @@ export const login = (data) => async(dispatch) => {
 
 export const logout =()=>async(dispatch)=>{
     dispatch(authSlice.actions.LogoutRequest());
-    await axios.get("http://localhost:4000/api/v1/auth/logout",{
+    await axios.get(`${appURL}/api/v1/auth/logout`,{
         withCredentials:true,
     }).then(res=>{
         dispatch(authSlice.actions.LogoutSuccess(res.data.message));
@@ -213,19 +232,19 @@ export const logout =()=>async(dispatch)=>{
 
 export const getUser =()=>async(dispatch)=>{
     dispatch(authSlice.actions.getUserRequest());
-    await axios.get("http://localhost:4000/api/v1/auth/me",{
+    await axios.get(`${appURL}/api/v1/auth/me`,{
         withCredentials:true,
     }).then(res=>{
         dispatch(authSlice.actions.getUserSuccess(res.data));
     }).catch(error=>{
-        const errorMessage = error  .response?.data?.message || "Network error. Please try again.";
+        const errorMessage = error.response?.data?.message || "Network error. Please try again.";
         dispatch(authSlice.actions.getUserFailed(errorMessage));
     });
 };
 
 export const forgotPassword =(email)=>async(dispatch)=>{
     dispatch(authSlice.actions.forgotPasswordRequest());
-    await axios.post("http://localhost:4000/api/v1/auth/password/forgot",{email},{
+    await axios.post(`${appURL}/api/v1/auth/password/forgot`,{email},{
         withCredentials:true,
         headers:{
             "Content-Type":"application/json",
@@ -240,7 +259,7 @@ export const forgotPassword =(email)=>async(dispatch)=>{
 
 export const resetPassword =(data,token)=>async(dispatch)=>{
     dispatch(authSlice.actions.resetPasswordRequest());
-    await axios.put(`http://localhost:4000/api/v1/auth/password/reset/${token}`,data,{
+    await axios.put(`${appURL}/api/v1/auth/password/reset/${token}`,data,{
         withCredentials:true,
         headers:{
             "Content-Type":"application/json",
@@ -254,7 +273,7 @@ export const resetPassword =(data,token)=>async(dispatch)=>{
 
 export const updatePassword =(data)=>async(dispatch)=>{
     dispatch(authSlice.actions.updatePasswordRequest());
-    await axios.put(`http://localhost:4000/api/v1/auth/password/update/`,data,{
+    await axios.put(`${appURL}/api/v1/auth/password/update/`,data,{
         withCredentials:true,
         headers:{
             "Content-Type":"application/json",
@@ -263,6 +282,22 @@ export const updatePassword =(data)=>async(dispatch)=>{
         dispatch(authSlice.actions.updatePasswordSuccess({message:res.data.message}));
     }).catch(error=>{
         dispatch(authSlice.actions.updatePasswordFailed(error.response.data.message));
+    });
+};
+
+
+export const handleToggleBlacklist = async (userId) => {
+  dispatch(toggleBlacklistRequest());
+  await axios.put(`${appURL}/api/v1/user/toggle-blacklist/${userId}`, {}, { withCredentials: true })
+    .then((res) => {
+      dispatch(toggleBlacklistSuccess());
+      toast.success(res.data.message);
+      return { success: true, data: res.data };
+    })
+    .catch((err) => {
+      dispatch(toggleBlacklistFailure(err.response?.data?.message || "Failed to toggle blacklist"));
+      toast.error(err.response?.data?.message || "Failed to toggle blacklist");
+      return { success: false, error: errorMessage };
     });
 };
 

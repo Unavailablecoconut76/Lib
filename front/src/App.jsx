@@ -20,16 +20,19 @@ const App=()=>{
   useEffect(()=>{
     dispatch(getUser());
     dispatch(fetchAllBooks());
+  },[]);
+
+  useEffect(()=>{
     if(isAuthenticated && user?.role==="Admin"){
       console.log("logged user --admin")
       dispatch(fetchAllUsers());
       dispatch(fetchAllBorrowedBooks());
     }
     if(isAuthenticated && user?.role==="User"){
-      console.log("logged user --user")
+      console.log(`logged user ${user}`)
       dispatch(fetchUserBorrowedBooks());
     }
-  },[isAuthenticated]);
+  },[isAuthenticated,user]);
 
   return (
     <AnimatePresence mode="wait">

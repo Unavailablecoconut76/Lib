@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BookA, NotebookPen, Trash2 } from "lucide-react"; // Add Trash2 import
+import { FaClock, FaCheck, FaTimes } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleAddBookPopup, togglereadBookPopup, togglerecordBookPopup } from "../store/slices/popUpSlice";
 import { toast } from "react-toastify"; 
@@ -9,6 +10,7 @@ import Header from "../layout/Header";
 import AddBookPopup from "../popups/AddBookPopup"
 import ReadBookPopup from"../popups/ReadBookPopup"
 import RecordBookPopup from "../popups/RecordBookPopup";
+import { createBookRequest } from "../store/slices/bookRequestSlice";
 
 const BookManagement = ({ hideHeader }) => {
   const dispatch=useDispatch();
@@ -61,6 +63,37 @@ const BookManagement = ({ hideHeader }) => {
       }
     };
 
+    const handleReserveRequest = (bookId) => {
+      dispatch(createBookRequest(bookId));
+    };
+
+    const [bookRequests, setBookRequests] = useState({});
+
+    // Add function to fetch book requests status
+    useEffect(() => {
+      const fetchBookRequests = async () => {
+        try {
+          const response = await fetch(`${appURL}/api/v1/book-requests`, {
+            credentials: 'include'
+          });
+          const data = await response.json();
+          
+          // Create a map of bookId -> request status
+          const requestMap = {};
+          data.requests.forEach(request => {
+            requestMap[request.book._id] = request.status;
+          });
+          setBookRequests(requestMap);
+        } catch (error) {
+          console.error('Error fetching book requests:', error);
+        }
+      };
+
+      if (user && !user.role === "Admin") {
+        fetchBookRequests();
+      }
+    }, [user]);
+
   return <>
     <main className="relative flex-1 p-6 pt-28">
       {!hideHeader && <Header/>} {/* Only render Header if hideHeader is false */}
@@ -109,6 +142,9 @@ const BookManagement = ({ hideHeader }) => {
                         Actions
                       </th>
                     )}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                      Reserve
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -134,11 +170,11 @@ const BookManagement = ({ hideHeader }) => {
                       )}
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          book.availibility 
+                          book.availibility && book.quantity!=0 && book.Quantity!=0
                             ? "bg-green-100 text-green-800" 
                             : "bg-red-100 text-red-800"
                         }`}>
-                          {book.availibility ? "Available" : "Unavailable"}
+                          {book.availibility  && book.quantity!=0 && book.Quantity!=0? "Available" : "Unavailable"}
                         </span>
                       </td>
                       {isAuthenticated && user?.role === "Admin" && (
@@ -165,6 +201,24 @@ const BookManagement = ({ hideHeader }) => {
                           </div>
                         </td>
                       )}
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                        {book.availibility ? (
+                          !bookRequests[book._id] ? (
+                            <button 
+                              onClick={() => handleReserveRequest(book._id)}
+                              className="px-4 py-1 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+                            >
+                              Reserve?
+                            </button>
+                          ) : bookRequests[book._id] === 'pending' ? (
+                            <FaClock className="text-yellow-500" />
+                          ) : bookRequests[book._id] === 'approved' ? (
+                            <FaCheck className="text-green-500" />
+                          ) : (
+                            <FaTimes className="text-red-500" />
+                          )
+                        ) : null}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

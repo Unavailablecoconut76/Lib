@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { PiKeyReturnBold } from "react-icons/pi";
 import { FaSquareCheck } from "react-icons/fa6";
+import { FaFileExcel, FaFileCsv } from 'react-icons/fa';
 import { useDispatch, useSelector } from "react-redux";
 import { togglereturnBookPopup } from "../store/slices/popUpSlice";
 import { toast } from "react-toastify";
@@ -8,6 +9,7 @@ import { fetchAllBooks, resetBookSlice } from "../store/slices/bookSlice";
 import { fetchAllBorrowedBooks, resetBorrowSlice } from "../store/slices/borrowSlice";
 import ReturnBookPopup from "../popups/ReturnBookPopup"
 import Header from "../layout/Header";
+import * as XLSX from 'xlsx';
 
 const Catalog = () => {
   const dispatch=useDispatch();
@@ -71,26 +73,81 @@ const Catalog = () => {
       dispatch(resetBorrowSlice());
     }
   },[dispatch,error,message,loading])
+
+  const exportData = (format) => {
+    const data = booksToDisplay.map(book => ({
+      Username: book.user.name,
+      Email: book.user.email,
+      'Book Title': book.book.title,
+      'Due Date': new Date(book.dueDate).toLocaleDateString(),
+      'Borrow Date': new Date(book.createdAt).toLocaleDateString(),
+      Status: book.returnDate ? 'Returned' : 'Borrowed'
+    }));
+
+    if (format === 'xlsx') {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Catalog');
+      XLSX.writeFile(wb, 'catalog.xlsx');
+    } else {
+      const csv = data.map(row => 
+        Object.values(row).join(',')
+      ).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'catalog.csv';
+      a.click();
+    }
+  };
+
   return <>
     <main className="relative flex-1 p-6 pt-28">
     <Header/>
     {/* subheader */}
 
     
-    <header className="flex flex-col gap-3 md:flex-row md:items-center">
-      <button className={`relative rounded sm:rounded-tr-none sm:rounded-br-none sm:rounded-tl-lg 
-        sm:rounded-bl-lg text-center border-2 font-semibold py-2 w-full sm:w-72 
-        ${filter==="borrowed"?"bg-black text-white border-black":"bg-gray-200 text-black border-gray-200 hover:bg-gray-300"}`} 
-        onClick={()=>setFilter("borrowed")}>Borrowed Books</button>
+    <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div className="flex w-full md:w-auto gap-3">
+        <button
+          className={`relative rounded sm:rounded-tr-none sm:rounded-br-none sm:rounded-tl-lg 
+            sm:rounded-bl-lg text-center border-2 font-semibold py-2 w-full sm:w-72 
+            ${filter === "borrowed" ? "bg-black text-white border-black" : "bg-gray-200 text-black border-gray-200 hover:bg-gray-300"}`}
+          onClick={() => setFilter("borrowed")}
+        >
+          Borrowed Books
+        </button>
 
-      <button
-      className={`relative rounded sm:rounded-tr-tl-none sm:rounded-bl-none sm:rounded-tr-lg 
-        sm:rounded-br-lg text-center border-2 font-semibold py-2 w-full sm:w-72 
-        ${filter==="overdue"?"bg-black text-white border-black":"bg-gray-200 text-black border-gray-200 hover:bg-gray-300"}`} 
-        onClick={()=>setFilter("overdue")}>
-        overdue Borrowers
-      </button>
-      </header>
+        <button
+          className={`relative rounded sm:rounded-tr-tl-none sm:rounded-bl-none sm:rounded-tr-lg 
+            sm:rounded-br-lg text-center border-2 font-semibold py-2 w-full sm:w-72 
+            ${filter === "overdue" ? "bg-black text-white border-black" : "bg-gray-200 text-black border-gray-200 hover:bg-gray-300"}`}
+          onClick={() => setFilter("overdue")}
+        >
+          Overdue Borrowers
+        </button>
+      </div>
+
+      {/* Right-aligned export buttons */}
+      <div className="flex space-x-2 mt-2 md:mt-0">
+        <button
+          onClick={() => exportData('xlsx')}
+          className="flex items-center px-4 py-2 bg-black text-white rounded shadow-sm hover:shadow-md transition-shadow"
+        >
+          <FaFileExcel className="mr-2" />
+          Export XLSX
+        </button>
+
+        <button
+          onClick={() => exportData('csv')}
+          className="flex items-center px-4 py-2 bg-black text-white rounded shadow-sm hover:shadow-md transition-shadow"
+        >
+          <FaFileCsv className="mr-2" />
+          Export CSV
+        </button>
+      </div>
+    </header>
 
     {
       booksToDisplay && booksToDisplay.length>0?(
