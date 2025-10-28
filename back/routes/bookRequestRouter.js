@@ -4,19 +4,21 @@ import { requestBook, handleBookRequest, getPendingRequests, getMyRequests } fro
 
 const router = express.Router();
 
-// router.get("/", isAuthenticated, async (req, res, next) => {
-//   if (req.user.role === "Admin") {
-//     return getPendingRequests(req, res, next);
-//   }
-//   return getMyRequests(req, res, next);
-// });
+// Main route for fetching requests (handles both admin and user cases)
+router.get("/", isAuthenticated, async (req, res, next) => {
+  try {
+    if (req.user.role === "Admin") {
+      await getPendingRequests(req, res, next);
+    } else {
+      await getMyRequests(req, res, next);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.get("/pending", isAuthenticated, isAuthorized("Admin"), getPendingRequests); // Admin route
-router.get("/my-requests", isAuthenticated, getMyRequests);
-
+// Other routes
 router.post("/request/:bookId", isAuthenticated, requestBook);
 router.put("/:requestId", isAuthenticated, isAuthorized("Admin"), handleBookRequest);
-router.get("/my-requests", isAuthenticated, getMyRequests); // For users
-
 
 export default router;
