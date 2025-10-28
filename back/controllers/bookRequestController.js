@@ -63,6 +63,7 @@ export const handleBookRequest = catchAsyncErrors(async (req, res, next) => {
     setTimeout(async () => {
       const borrowRecord = await Borrow.findOne({
         "user.email": request.user.email,
+        "user.role": "User",
         book: book._id,
         createdAt: { $gt: request.updatedAt }
       });
