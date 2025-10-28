@@ -72,12 +72,17 @@ export const handleBookRequest = catchAsyncErrors(async (req, res, next) => {
         book.quantity++;
         book.availibility = true;
         await book.save();
+
+        request.status = "rejected";
+        request.validTill = new Date();
+        await request.save();
       }
     }, 2 * 24 * 60 * 60 * 1000); 
   }
   res.status(200).json({
     success: true,
-    message: `Request ${status} successfully`
+    message: `Request ${status} successfully`,
+    request : request
   });
 });
 
