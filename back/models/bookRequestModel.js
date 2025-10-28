@@ -14,6 +14,11 @@ const bookRequestSchema = new mongoose.Schema({
     email: {
       type: String, 
       required: true,
+    },
+    role:{
+      type:String,
+      enum:["Admin","User"],//role can beonly these
+      default:"User",
     }
   },
   book: {
